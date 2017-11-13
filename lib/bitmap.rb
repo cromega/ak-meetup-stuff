@@ -5,11 +5,8 @@ require_relative "operations/vertical"
 require_relative "operations/horizontal"
 
 class Bitmap
-  def initialize
-  end
-
   def show(lines)
-    bitmap = []
+    ops = []
 
     lines.each do |line|
       command, params = line.split(" ", 2)
@@ -17,18 +14,29 @@ class Bitmap
 
       case command
       when "I"
-        bitmap = Operations::New.new(*params).run(bitmap)
+        ops << Operations::New.new(*params)
       when "C"
-        bitmap = Operations::Clear.new(*params).run(bitmap)
+        ops << Operations::Clear.new(*params)
       when "P"
-        bitmap = Operations::Pixel.new(*params).run(bitmap)
+        ops << Operations::Pixel.new(*params)
       when "V"
-        bitmap = Operations::Vertical.new(*params).run(bitmap)
+        ops << Operations::Vertical.new(*params)
       when "H"
-        bitmap = Operations::Horizontal.new(*params).run(bitmap)
+        ops << Operations::Horizontal.new(*params)
       when "S"
+        bitmap = execute(ops)
         return bitmap.join("\n")
       end
     end
+  end
+
+  private
+
+  def execute(ops)
+    bitmap = []
+    ops.each do |op|
+      bitmap = op.run(bitmap)
+    end
+    bitmap
   end
 end
